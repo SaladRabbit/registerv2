@@ -1,0 +1,23 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "dotenv": "https://deno.land/std@0.224.0/dotenv/mod.ts"
+  },
+  "tasks": {
+    "token": "deno run --allow-env --allow-net --allow-read functions/_generate-token.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"]
+  },
+  "lint": {
+    "files": {
+      "include": ["functions/"]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": ["functions/"]
+    }
+  }
+}
+
