@@ -1,3 +1,9 @@
 {
-    "deno.enable": true
+    // "deno.enable": true,  <-- REMOVE or comment out this line
+    
+    // This tells the Deno extension to ONLY lint files in these specific paths.
+    // Your Next.js code in 'src/' will now be correctly ignored by the Deno linter.
+    "deno.enablePaths": [
+        "supabase/functions"
+    ]
 }

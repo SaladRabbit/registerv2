@@ -135,15 +135,19 @@ export default function Home() {
           enableHighAccuracy: true,
           timeout: 10000,
           maximumAge: 0,
-        }
+        } // <-- The options object correctly ends here
       );
     } else {
       // Error: Browser doesn't support geolocation
       setErrorMessage("Geolocation not supported. Sorting by day.");
       fetchGroups(null); // Call the fallback
     }
-  }, [functionsUrl]); // Rerun effect if functionsUrl changes
+  }, [functionsUrl]); // <-- The useEffect hook correctly ends here
 
+  //
+  // vvv THIS IS THE CORRECT LOCATION for the handleSignIn function vvv
+  // It is INSIDE the Home component, but AFTER the useEffect hook.
+  //
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage("");
@@ -163,7 +167,7 @@ export default function Home() {
       return;
     }
 
-    // --- Geolocation Check Logic ---
+    // --- UX CHECK (Client-side) ---
     if (group.format === "In-person") {
       if (!userLocation || group.distance_meters === null) {
         setErrorMessage(
@@ -183,22 +187,60 @@ export default function Home() {
         return;
       }
     }
-    // If group.format is 'Online', we skip the check
 
-    // --- Sign-in Logic (to be implemented) ---
-    console.log("Signing in...", { email, selectedGroup });
-    // Simulate an API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // --- THE REAL SUBMISSION (Server-side) ---
+    try {
+      const response = await fetch('/api/check-in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          groupId: selectedGroup,
+          isNoEmail: false, // TODO: You'll need to add a "no email" checkbox to your form
+          geolocation: userLocation, // Send the user's location for server validation
+        }),
+      });
 
-    // Here we would call the /api/signin endpoint
-    // For now, just show a success message
-    setSuccessMessage(
-      `Successfully signed in ${email} to ${group.name}! (Simulation)`
-    );
-    setEmail("");
-    setSelectedGroup("");
-    setStatus("success"); // Set status to 'success' after submission
-  };
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.error || 'An error occurred during sign-in.');
+        setStatus('idle');
+        return;
+      }
+
+      // --- Handle the "Routing" from the API ---
+      switch (data.status) {
+        case 'CHECKIN_COMPLETE':
+          // router.push('/complete'); 
+          setSuccessMessage('Check-in complete!');
+          break;
+        case 'ORIENTATION_REQUIRED':
+          // router.push('/orientation');
+          setSuccessMessage('Orientation required. Redirecting...');
+          break;
+        case 'NO_EMAIL_INFO_REQUIRED':
+          // router.push('/basic-info');
+          setSuccessMessage('Please fill in your info. Redirecting...');
+          break;
+      }
+
+      setEmail("");
+      setSelectedGroup("");
+      setStatus("success");
+
+    } catch (error) {
+      // This is the improved error handling you added. Good idea.
+      setErrorMessage(
+        error instanceof Error
+          ? `Could not connect to the server: ${error.message}`
+          : 'Could not connect to the server. Please try again.'
+      );
+      setStatus('error'); // Changed from 'idle' to 'error'
+    }
+  }; // <-- The handleSignIn function correctly ends here
 
   const getDayOfWeek = (day: string) => {
     const days: { [key: string]: string } = {
@@ -306,4 +348,3 @@ export default function Home() {
     </main>
   );
 }
-
