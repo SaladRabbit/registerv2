@@ -33,10 +33,13 @@ CREATE TABLE groups (
 -- ----------------------------------------------------------------
 CREATE TABLE members (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    first_name TEXT NOT NULL,
+    first_name TEXT,
     last_name TEXT,
     email TEXT UNIQUE,
     phone TEXT,
+    gender TEXT,
+    ethnicity TEXT,
+    date_of_birth DATE,
     orientation_complete BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -52,6 +55,25 @@ CREATE TABLE orientation_details (
     gender TEXT,
     ethnicity TEXT,
     reason_for_attending TEXT,
+    emergency_contact_name TEXT,
+    emergency_contact_phone TEXT,
+    emergency_contact_email TEXT,
+    source_of_discovery TEXT,
+    problematic_substances TEXT,
+    currently_in_treatment TEXT,
+    current_treatment_programme TEXT,
+    previous_treatment TEXT,
+    previous_treatment_programmes TEXT,
+    previous_recovery_groups TEXT,
+    previous_recovery_groups_names TEXT,
+    goals_for_attending TEXT,
+    anything_else_important TEXT,
+    how_else_help TEXT,
+    consent_whatsapp BOOLEAN,
+    consent_confidentiality BOOLEAN,
+    consent_anonymity BOOLEAN,
+    consent_liability BOOLEAN,
+    consent_voluntary BOOLEAN,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

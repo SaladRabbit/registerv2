@@ -84,14 +84,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(basicInfoPage, request.url));
   }
 
-  // RULE 3: If user is checked in, send them to the complete page.
+  if (pathname === completePage) {
+    // Let the user see the /complete page, but...
+    // ...also send a command to clear the cookie.
+    response.cookies.set('app_status', '', { path: '/', maxAge: -1 });
+    return response; 
+  }
+
+  // RULE 4: If user's state *is* 'CHECKIN_COMPLETE' but they are *not*
+  // on the complete page, send them there *one time*.
+  // This will then trigger Rule 3.
   if (status === 'CHECKIN_COMPLETE' && pathname !== completePage) {
-    // If they try to go back to '/' or '/orientation', force them to /complete
     return NextResponse.redirect(new URL(completePage, request.url));
   }
-  
-  // You would also add a rule to clear the cookie, e.g., on the /complete page
-  // or after a certain amount of time.
 
   // If no rules match, continue as normal.
   return response

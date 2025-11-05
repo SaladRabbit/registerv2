@@ -116,7 +116,9 @@ export async function POST(request: Request) {
       
       const response = NextResponse.json({ status: 'ORIENTATION_REQUIRED', isNewMember: true })
       // ADDED: Set the cookie for the middleware
-      response.cookies.set('app_status', 'ORIENTATION_REQUIRED', { path: '/' });
+      response.cookies.set('app_status', 'ORIENTATION_REQUIRED', { path: '/', httpOnly: true });
+      response.cookies.set('member_id', newMember.id, { path: '/', httpOnly: true });
+      response.cookies.set('pending_group_id', groupId, { path: '/', httpOnly: true });
       return response
     }
 
@@ -126,8 +128,10 @@ export async function POST(request: Request) {
     }
     if (!member.orientation_complete) {
       const response = NextResponse.json({ status: 'ORIENTATION_REQUIRED', isNewMember: false })
-      // ADDED: Set the cookie for the middleware
-      response.cookies.set('app_status', 'ORIENTATION_REQUIRED', { path: '/' });
+      // ADDED: Set the cookies for the middleware and orientation page
+      response.cookies.set('app_status', 'ORIENTATION_REQUIRED', { path: '/', httpOnly: true });
+      response.cookies.set('member_id', member.id, { path: '/', httpOnly: true });
+      response.cookies.set('pending_group_id', groupId, { path: '/', httpOnly: true });
       return response
     }
 
