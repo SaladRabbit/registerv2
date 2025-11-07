@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // <-- 1. IMPORT THE ROUTER
+
 // We aren't using createClient in this file, but it's good to keep for later
 // import { createClient } from "@/lib/supabase/client";
 
@@ -31,11 +33,13 @@ interface GeolocationError {
 }
 
 export default function Home() {
+  const router = useRouter(); // <-- 2. INITIALIZE THE ROUTER
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [isNoEmail, setIsNoEmail] = useState(false); // <-- "No Email" state
   const [status, setStatus] = useState<
-    "loading" | "error" | "success" | "idle" | "submitting" // Added 'submitting' state
+    "loading" | "error" | "success" | "idle" | "submitting"
   >("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -135,27 +139,23 @@ export default function Home() {
           enableHighAccuracy: true,
           timeout: 10000,
           maximumAge: 0,
-        } // <-- The options object correctly ends here
+        }
       );
     } else {
       // Error: Browser doesn't support geolocation
       setErrorMessage("Geolocation not supported. Sorting by day.");
       fetchGroups(null); // Call the fallback
     }
-  }, [functionsUrl]); // <-- The useEffect hook correctly ends here
+  }, [functionsUrl]); // Rerun effect if functionsUrl changes
 
-  //
-  // vvv THIS IS THE CORRECT LOCATION for the handleSignIn function vvv
-  // It is INSIDE the Home component, but AFTER the useEffect hook.
-  //
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage("");
     setErrorMessage("");
     setStatus("submitting"); // Set status to 'submitting'
 
-    if (!selectedGroup || !email) {
-      setErrorMessage("Please select a group and enter your email.");
+    if (!selectedGroup || (!email && !isNoEmail)) {
+      setErrorMessage("Please select a group and enter your email (or check the box).");
       setStatus("idle"); // Reset status on error
       return;
     }
@@ -187,7 +187,7 @@ export default function Home() {
         return;
       }
     }
-
+    
     // --- THE REAL SUBMISSION (Server-side) ---
     try {
       const response = await fetch('/api/check-in', {
@@ -196,10 +196,10 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email,
+          email: isNoEmail ? null : email, // Pass null if checkbox is checked
           groupId: selectedGroup,
-          isNoEmail: false, // TODO: You'll need to add a "no email" checkbox to your form
-          geolocation: userLocation, // Send the user's location for server validation
+          isNoEmail: isNoEmail, 
+          geolocation: userLocation, 
         }),
       });
 
@@ -211,36 +211,27 @@ export default function Home() {
         return;
       }
 
-      // --- Handle the "Routing" from the API ---
+      // --- 3. FIX THE AUTO-REDIRECT ---
+      // These are no longer commented out
       switch (data.status) {
         case 'CHECKIN_COMPLETE':
-          // router.push('/complete'); 
-          setSuccessMessage('Check-in complete!');
+          router.push('/complete'); // Redirect to complete page
           break;
         case 'ORIENTATION_REQUIRED':
-          // router.push('/orientation');
-          setSuccessMessage('Orientation required. Redirecting...');
+          router.push('/orientation'); // Redirect to orientation page
           break;
         case 'NO_EMAIL_INFO_REQUIRED':
-          // router.push('/basic-info');
-          setSuccessMessage('Please fill in your info. Redirecting...');
+          // This path will now also go to the orientation page
+          router.push('/orientation'); 
           break;
       }
 
-      setEmail("");
-      setSelectedGroup("");
-      setStatus("success");
-
     } catch (error) {
-      // This is the improved error handling you added. Good idea.
-      setErrorMessage(
-        error instanceof Error
-          ? `Could not connect to the server: ${error.message}`
-          : 'Could not connect to the server. Please try again.'
-      );
-      setStatus('error'); // Changed from 'idle' to 'error'
+      console.error('Sign-in fetch error:', error);
+      setErrorMessage('Could not connect to the server. Please try again.');
+      setStatus('idle');
     }
-  }; // <-- The handleSignIn function correctly ends here
+  };
 
   const getDayOfWeek = (day: string) => {
     const days: { [key: string]: string } = {
@@ -276,9 +267,8 @@ export default function Home() {
             {errorMessage}
           </div>
         )}
-
-        {/* This check ensures the form only shows when not loading */
-        status !== "loading" && (
+        
+        {status !== "loading" && (
           <form onSubmit={handleSignIn} className="space-y-6">
             <div>
               <label
@@ -323,10 +313,26 @@ export default function Home() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={!isNoEmail} // Required only if checkbox is NOT checked
+                disabled={isNoEmail} // Disable if checkbox is checked
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 placeholder="you@example.com"
               />
+            </div>
+
+            {/* --- This is the "No Email" checkbox --- */}
+            <div className="flex items-center">
+              <input
+                id="isNoEmail"
+                name="isNoEmail"
+                type="checkbox"
+                checked={isNoEmail}
+                onChange={(e) => setIsNoEmail(e.target.checked)}
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+              />
+              <label htmlFor="isNoEmail" className="ml-2 block text-sm text-gray-900">
+                I don't have an email address
+              </label>
             </div>
 
             {successMessage && (

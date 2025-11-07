@@ -80,7 +80,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // RULE 2: If user needs to give basic info, only allow them on that page.
-  if (status === 'NO_EMAIL_INFO_REQUIRED' && pathname !== basicInfoPage) {
+  if (status === 'NO_EMAIL_INFO_REQUIRED' && pathname !== orientationPage) {
     return NextResponse.redirect(new URL(basicInfoPage, request.url));
   }
 

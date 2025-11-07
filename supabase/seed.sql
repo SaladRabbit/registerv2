@@ -2,16 +2,49 @@
 INSERT INTO affiliates (id, name, initials) VALUES
 ('8a61a3e8-118a-428a-8a58-5e7836b7f3d4', 'The Bridge', 'TB');
 
--- Seed the `groups` table with location and schedule
--- Durban North: Tuesday at 18:30
-INSERT INTO groups (affiliate_id, name, format, specialisation, latitude, longitude, meeting_day, meeting_time) VALUES
-('8a61a3e8-118a-428a-8a58-5e7836b7f3d4', 'Durban North Weekly', 'In-person', 'General Recovery', -29.7823, 31.0422, 'Tuesday', '18:30:00');
+-- supabase/seed.sql
+-- This file will run automatically after 'npx supabase db reset'
 
--- Cape Town: Thursday at 19:00
-INSERT INTO groups (affiliate_id, name, format, specialisation, latitude, longitude, meeting_day, meeting_time) VALUES
-('8a61a3e8-118a-428a-8a58-5e7836b7f3d4', 'Cape Town Evening Group', 'In-person', 'Working Professionals', -33.9249, 18.4241, 'Thursday', '19:00:00');
+-- Example 1: An in-person group
+INSERT INTO public.groups (
+    id,
+    name,
+    format,
+    latitude,
+    longitude,
+    meeting_day,
+    meeting_time,
+    timezone
+) VALUES (
+    '61f6c3d8-73d9-479b-b726-fa87c8845e34', -- The ID from your error!
+    'Durban North In-Person',
+    'In-person',
+    -29.7941, -- Example latitude (Durban North)
+    31.0402,  -- Example longitude (Durban North)
+    '2', -- '2' = Tuesday
+    '18:30:00',
+    'Africa/Johannesburg'
+);
 
--- Online: Wednesday at 20:00
-INSERT INTO groups (affiliate_id, name, format, specialisation, latitude, longitude, meeting_day, meeting_time) VALUES
-('8a61a3e8-118a-428a-8a58-5e7836b7f3d4', 'Online National Group', 'Online', 'General Recovery', NULL, NULL, 'Wednesday', '20:00:00');
+-- Example 2: An online group
+INSERT INTO public.groups (
+    id,
+    name,
+    format,
+    latitude,
+    longitude,
+    meeting_day,
+    meeting_time,
+    timezone
+) VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890', -- A new UUID
+    'Online National Group',
+    'Online',
+    0,  -- No location needed for online
+    0,  -- No location needed for online
+    '4', -- '4' = Thursday
+    '19:00:00',
+    'Africa/Johannesburg'
+);
 
+-- Add more INSERT statements for all your other groups here...

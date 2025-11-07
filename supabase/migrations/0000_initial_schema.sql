@@ -20,6 +20,7 @@ CREATE TABLE groups (
     name TEXT NOT NULL,
     format TEXT, -- e.g., 'In-person', 'Online'
     specialisation TEXT,
+    timezone TEXT,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     meeting_day TEXT, -- e.g., 'Tuesday'
@@ -82,9 +83,24 @@ CREATE TABLE orientation_details (
 -- ----------------------------------------------------------------
 CREATE TABLE attendance_register (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    member_id UUID REFERENCES members(id) ON DELETE CASCADE,
+    member_id UUID REFERENCES members(id) ON DELETE CASCADE, -- Will be NULL for no-email
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     attendance_date DATE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    -- DISCRIMINATOR COLUMN:
+    -- This is the key. It's true if the row is for a "no-email"
+    -- check-in, and false/null if it's linked to a member.
+    is_no_email_check_in BOOLEAN DEFAULT false,
+
+    -- GENERIC DATA COLUMNS (for no-email check-ins)
+    -- These will be NULL for regular member check-ins.
+    first_name TEXT,
+    last_name TEXT,
+    phone TEXT,
+    dob DATE,
+    ethnicity TEXT,
+    gender TEXT,
+    reason_for_attending TEXT
 );
 
