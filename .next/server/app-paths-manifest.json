@@ -1,7 +1,0 @@
-{
-  "/complete/page": "app/complete/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/orientation/part2/route": "app/api/orientation/part2/route.js",
-  "/page": "app/page.js",
-  "/orientation/page": "app/orientation/page.js"
-}
